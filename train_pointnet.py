@@ -37,13 +37,13 @@ def arcsine_loss(pred_rotation, rotation):
 def compute_geodesic_distance_from_two_matrices(m1, m2, use_gpu):
     batch = m1.shape[0]
     if use_gpu:
-        batch = batch.cuda()
+        batch = torch.ones(batch).cuda()
     m = torch.bmm(m1, m2.transpose(1, 2))  # batch*3*3
     cos = (m[:, 0, 0] + m[:, 1, 1] + m[:, 2, 2] - 1)/2
     # cos = torch.min(cos, torch.autograd.Variable(torch.ones(batch).cuda()))
     # cos = torch.max(cos, torch.autograd.Variable(torch.ones(batch).cuda())*-1)
-    cos = torch.min(cos, torch.autograd.Variable(torch.ones(batch)))
-    cos = torch.max(cos, torch.autograd.Variable(torch.ones(batch)) * -1)
+    cos = torch.min(cos, torch.autograd.Variable(batch))
+    cos = torch.max(cos, torch.autograd.Variable(batch) * -1)
     theta = torch.acos(cos)
     return theta
 
