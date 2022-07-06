@@ -1,5 +1,5 @@
 import argparse
-
+from shadowhand_gym.envs.config import *
 
 
 def get_args():
@@ -23,13 +23,13 @@ def get_args():
     parser.add_argument('--random_eps', type=float,
                         default=0.3, help='random eps')
     parser.add_argument('--buffer_size', type=int,
-                        default=int(1e6), help='the size of the buffer')
+                        default=int(1e3), help='the size of the buffer')
     parser.add_argument('--replay_k', type=int, default=4,
                         help='ratio to be replace')
     parser.add_argument('--clip_obs', type=float,
                         default=200, help='the clip ratio')
     parser.add_argument('--batch_size', type=int,
-                        default=256, help='the sample batch size')
+                        default=128, help='the sample batch size')
     parser.add_argument('--gamma', type=float, default=0.98,
                         help='the discount factor')
     parser.add_argument('--action_l2', type=float, default=1, help='l2 reg')
@@ -40,13 +40,13 @@ def get_args():
     parser.add_argument('--polyak', type=float, default=0.95,
                         help='the average coefficient')
     parser.add_argument('--n_test_rollouts', type=int,
-                        default=570, help='the number of tests')
+                        default=16, help='the number of tests')
     parser.add_argument('--clip_range', type=float,
                         default=5, help='the clip range')
     parser.add_argument('--no_cuda', action='store_true',
                         help='if use gpu do the acceleration')
     parser.add_argument('--num_rollouts', type=int,
-                        default=425, help='the rollouts per cycle')
+                        default=12, help='the rollouts per cycle')
     parser.add_argument('--expID', type=int, default=0)
     parser.add_argument('--eval_freq', type=int, default=50,
                         help='number of cycles between eval and logging')
@@ -62,7 +62,7 @@ def get_args():
                         help="do not save anything")
     parser.add_argument('--epoch_per_cycle', type=float, default=22.966,
                         help="alternative way to specify n_batches; it means the number of epochs to train over the size of newly collected data; if newly collected 1000 transitions, 10 epochs means training for 100 batches with batch size being 100")
-    parser.add_argument('--num_parallel_envs', type=int, default=425,
+    parser.add_argument('--num_parallel_envs', type=int, default=12,
                         help='number of parallel VecEnv; if not specified, calculate from the available vCPUs')
     parser.add_argument('--chunk_size', type=int, default=10,
                         help='if not equal 0, use SubprocChunkVecEnv as proposed in baselines PR 620 with given chunk size')
@@ -80,10 +80,11 @@ def get_args():
     parser.add_argument('--width', type=int, default=768)
     parser.add_argument('--point_cloud', action="store_true",
                         help="enable using pointnet + MLP")
-    parser.add_argument('--num_points', type=int, default=128,
-                        help="number of points to sample in mujoco")
+    parser.add_argument('--num_points', type=int, default=512,
+                        help="number of points to sample")
     parser.add_argument('--pointnet_output_dim', type=int, default=512,
                         help="output dim of the two stream pointnet feature net")
+    parser.add_argument('--use_gpu', action='store_true', help='train and evaluate with gpu')
 
     args = parser.parse_args()
 

@@ -7,3 +7,8 @@ ALL_TRAIN = ['YcbChipsCan', 'YcbCrackerBox', 'YcbFoamBrick', 'YcbGelatinBox', 'Y
              'YcbMediumClamp', 'YcbMustardBottle', 'YcbPottedMeatCan', 'YcbPowerDrill', 'YcbScissors', 'YcbTennisBall']
 # 4 objects (avg success rate of experts = %)
 ALL_TEST = ['YcbBanana', 'YcbPear', 'YcbStrawberry', 'YcbTomatoSoupCan']
+
+ALL_CLS_TRAIN = ['YcbChipsCan', 'YcbCrackerBox', 'YcbFoamBrick', 'YcbGelatinBox', 'YcbHammer', 'YcbMasterChefCan',
+             'YcbMediumClamp', 'YcbMustardBottle', 'YcbPottedMeatCan', 'YcbPowerDrill']
+
+ALL_CLS_TEST = ['YcbBanana', 'YcbPear', 'YcbStrawberry', 'YcbTomatoSoupCan', 'YcbScissors', 'YcbTennisBall']

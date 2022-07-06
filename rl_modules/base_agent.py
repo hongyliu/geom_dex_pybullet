@@ -4,9 +4,9 @@ import numpy as np
 from rl_modules.utils import *
 import wandb
 import time
-from baselines.common.vec_env.subproc_vec_env import SubprocVecEnv
-from baselines.common.vec_env.dummy_vec_env import DummyVecEnv
-from baselines.common.vec_env.subproc_chunk_vec_env import SubprocChunkVecEnv
+from vec_env.subproc_vec_env import SubprocVecEnv
+from vec_env.dummy_vec_env import DummyVecEnv
+from vec_env.subproc_chunk_vec_env import SubprocChunkVecEnv
 
 """
 base agent

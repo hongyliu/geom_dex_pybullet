@@ -42,22 +42,15 @@ class PointCloudWrapper(Wrapper):
         assert isinstance(observation, dict)
         observation['minimal_obs'] = observation.pop('observation')
         if self.args.point_cloud:
-            object_points, object_normals = self.env.get_point_cloud('object')
-            target_points, target_normals = self.env.get_point_cloud('target')
-            # select some number of object vertices
-            selected = self.rand.randint(
-                low=0, high=object_points.shape[0], size=self.args.num_points)
-            sampled_points = object_points[selected].copy()
-            sampled_normals = object_normals[selected].copy()
+            object_points, object_normals = self.env.get_point_cloud('object', self.args.num_points, self.rand)
+            target_points, target_normals = self.env.get_point_cloud('target', self.args.num_points, self.rand)
 
-            sampled_target_points = target_points[selected].copy()
-            sampled_target_normals = target_normals[selected].copy()
             # concat all obs
             observation['pc_obs'] = np.concatenate([observation['minimal_obs'],
-                                                    sampled_points.flatten(),
-                                                    sampled_normals.flatten(),
-                                                    sampled_target_points.flatten(),
-                                                    sampled_target_normals.flatten()])
+                                                    object_points.flatten(),
+                                                    object_normals.flatten(),
+                                                    target_points.flatten(),
+                                                    target_normals.flatten()])
 
         return observation
 

@@ -1,1 +1,0 @@
-CUDA_VISIBLE_DEVICES=3 nohup python train_pointnet.py --expID 2 --use_gpu > out.log 2>&1 &
