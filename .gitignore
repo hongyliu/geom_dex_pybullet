@@ -1,5 +1,6 @@
 ### Python template
 dex_logs/
+baselines/
 wandb/
 .idea/
 *.jpg

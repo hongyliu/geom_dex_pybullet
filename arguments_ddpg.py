@@ -23,7 +23,7 @@ def get_args():
     parser.add_argument('--random_eps', type=float,
                         default=0.3, help='random eps')
     parser.add_argument('--buffer_size', type=int,
-                        default=int(1e3), help='the size of the buffer')
+                        default=int(1e5), help='the size of the buffer')
     parser.add_argument('--replay_k', type=int, default=4,
                         help='ratio to be replace')
     parser.add_argument('--clip_obs', type=float,
