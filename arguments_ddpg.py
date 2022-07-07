@@ -40,13 +40,13 @@ def get_args():
     parser.add_argument('--polyak', type=float, default=0.95,
                         help='the average coefficient')
     parser.add_argument('--n_test_rollouts', type=int,
-                        default=16, help='the number of tests')
+                        default=6, help='the number of tests')
     parser.add_argument('--clip_range', type=float,
-                        default=5, help='the clip range')
+                        default=4, help='the clip range')
     parser.add_argument('--no_cuda', action='store_true',
                         help='if use gpu do the acceleration')
     parser.add_argument('--num_rollouts', type=int,
-                        default=12, help='the rollouts per cycle')
+                        default=4, help='the rollouts per cycle')
     parser.add_argument('--expID', type=int, default=0)
     parser.add_argument('--eval_freq', type=int, default=50,
                         help='number of cycles between eval and logging')
@@ -62,7 +62,7 @@ def get_args():
                         help="do not save anything")
     parser.add_argument('--epoch_per_cycle', type=float, default=22.966,
                         help="alternative way to specify n_batches; it means the number of epochs to train over the size of newly collected data; if newly collected 1000 transitions, 10 epochs means training for 100 batches with batch size being 100")
-    parser.add_argument('--num_parallel_envs', type=int, default=12,
+    parser.add_argument('--num_parallel_envs', type=int, default=4,
                         help='number of parallel VecEnv; if not specified, calculate from the available vCPUs')
     parser.add_argument('--chunk_size', type=int, default=10,
                         help='if not equal 0, use SubprocChunkVecEnv as proposed in baselines PR 620 with given chunk size')
@@ -89,8 +89,8 @@ def get_args():
     args = parser.parse_args()
 
     # default to use train/test split specified in dex_envs/configs
-    args.train_names = args.train_names if args.train_names else ALL_TRAIN
-    args.test_names = args.test_names if args.test_names else ALL_TEST
+    args.train_names = args.train_names if args.train_names else ALL_DDPG_TRAIN
+    args.test_names = args.test_names if args.test_names else ALL_DDPG_TEST
     assert len(list(set(args.train_names) & set(args.test_names))
                ) == 0, 'cannot have overlapping train/test envs'
 

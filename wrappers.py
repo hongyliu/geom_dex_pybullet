@@ -62,14 +62,22 @@ class PointCloudWrapper(Wrapper):
             return {'minimal_obs': obs}
         elif obs.shape[-1] == state_dim + goal_dim:  # with goal
             return {'minimal_obs': obs[..., :-goal_dim], 'desired_goal': obs[..., -goal_dim:]}
-        # with normals, without goal
+            # with normals, without goal
         elif obs.shape[-1] == state_dim + self.args.num_points * 12:
             return {'minimal_obs': obs[..., :state_dim],
-                    'object_points': obs[..., state_dim:state_dim + self.args.num_points * 3]}
-        # with normals, with goal
+                    'object_points': obs[..., state_dim:state_dim + self.args.num_points * 3],
+                    'object_normals': obs[...,
+                                      state_dim + self.args.num_points * 3:state_dim + self.args.num_points * 6],
+                    'target_points': obs[...,
+                                     state_dim + self.args.num_points * 6:state_dim + self.args.num_points * 9],
+                    'target_normals': obs[..., state_dim + self.args.num_points * 9:]}
+            # with normals, with goal
         elif obs.shape[-1] == state_dim + self.args.num_points * 12 + goal_dim:
             return {'minimal_obs': obs[..., :state_dim],
                     'object_points': obs[..., state_dim:state_dim + self.args.num_points * 3],
+                    'object_normals': obs[..., state_dim + self.args.num_points * 3:state_dim + self.args.num_points * 6],
+                    'target_points': obs[..., state_dim + self.args.num_points * 6:state_dim + self.args.num_points * 9],
+                    'target_normals': obs[..., state_dim + self.args.num_points * 9:state_dim + self.args.num_points * 12],
                     'desired_goal': obs[..., -goal_dim:]}
         else:
             print(obs.shape)

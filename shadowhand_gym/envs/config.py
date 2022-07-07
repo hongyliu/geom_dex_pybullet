@@ -12,3 +12,6 @@ ALL_CLS_TRAIN = ['YcbChipsCan', 'YcbCrackerBox', 'YcbFoamBrick', 'YcbGelatinBox'
              'YcbMediumClamp', 'YcbMustardBottle', 'YcbPottedMeatCan', 'YcbPowerDrill']
 
 ALL_CLS_TEST = ['YcbBanana', 'YcbPear', 'YcbStrawberry', 'YcbTomatoSoupCan', 'YcbScissors', 'YcbTennisBall']
+
+ALL_DDPG_TRAIN = ['YcbChipsCan', 'YcbCrackerBox', 'YcbFoamBrick', 'YcbGelatinBox']
+ALL_DDPG_TEST = ['YcbBanana', 'YcbPear']

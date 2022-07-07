@@ -41,12 +41,22 @@ class StatePointCloud(nn.Module):
         obs_dict = self.args.flat2dict(x)
         states, goal = obs_dict['minimal_obs'], obs_dict['desired_goal']
         # get sampled points ========================================================
-        obj_points = obs_dict['object_points']
+        obj_points, target_points = obs_dict['object_points'], obs_dict['target_points']
         # reshape points
-        assert len(obj_points.shape) == 2
+        assert len(obj_points.shape) == 2 and len(target_points.shape) == 2
         obj_points = obj_points.reshape(
             [x.shape[0], self.args.num_points, 3])
-
+        target_points = target_points.reshape(
+            [x.shape[0], self.args.num_points, 3])
+        # get sampled normals ========================================================
+        obj_normals, target_normals = obs_dict['object_normals'], obs_dict['target_normals']
+        # reshape points
+        assert len(obj_normals.shape) == 2 and len(
+            target_normals.shape) == 2
+        obj_normals = obj_normals.reshape(
+            [x.shape[0], self.args.num_points, 3])
+        target_normals = target_normals.reshape(
+            [x.shape[0], self.args.num_points, 3])
         # get pointnet features ========================================================
         obj_points = torch.cat([obj_points, obj_normals], dim=-1)
         target_points = torch.cat(
