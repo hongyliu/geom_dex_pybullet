@@ -67,7 +67,7 @@ def addSTARTtoImages(imgs):
         img = imgs[i]
         img = Image.fromarray(img, "RGB")
         draw = ImageDraw.Draw(img)
-        font = ImageFont.truetype('sans-serif.ttf', 60)
+        font = ImageFont.truetype('FreeMono.ttf', 60)
         draw.text((170, 380), "START", (0, 0, 0), font=font)
         img = np.array(img)
         imgs[i] = img.astype(np.uint8)
@@ -80,7 +80,7 @@ def addSUCCESStoImages(imgs, filter_array):
             img = imgs[i]
             img = Image.fromarray(img, "RGB")
             draw = ImageDraw.Draw(img)
-            font = ImageFont.truetype('sans-serif.ttf', 60)
+            font = ImageFont.truetype('FreeMono.ttf', 60)
             draw.text((115, 380), "SUCCESS", (0, 0, 0), font=font)
             img = np.array(img, dtype=np.uint8)
             mask = (img == 255).astype(np.uint8)

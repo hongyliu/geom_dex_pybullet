@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<robot name="2a8d87523e23a01d5f40874aec1ee3a6" version="1.0">
+  <link name="base_link">
+    <inertial>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+      <mass value="0.0"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+    <visual name="2a8d87523e23a01d5f40874aec1ee3a6___1">
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 -0.0 0.0"/>
+      <geometry>
+        <mesh filename="shape/visual/2a8d87523e23a01d5f40874aec1ee3a6_m1_vm.obj"/>
+      </geometry>
+    </visual>
+    <visual name="2a8d87523e23a01d5f40874aec1ee3a6___2">
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 -0.0 0.0"/>
+      <geometry>
+        <mesh filename="shape/visual/2a8d87523e23a01d5f40874aec1ee3a6_m2_vm.obj"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 -0.0 0.0"/>
+      <geometry>
+        <mesh filename="shape/collision/2a8d87523e23a01d5f40874aec1ee3a6_cm.obj"/>
+      </geometry>
+    </collision>
+  </link>
+</robot>

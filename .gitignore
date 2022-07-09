@@ -1,5 +1,7 @@
 ### Python template
 dex_logs/
+
+data/
 baselines/
 wandb/
 .idea/

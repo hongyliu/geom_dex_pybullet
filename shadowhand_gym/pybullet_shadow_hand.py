@@ -5,6 +5,8 @@ import time
 import pybullet as p
 import pybullet_utils.bullet_client as bc
 import pybullet_data
+import igibson
+from shadowhand_gym.envs.config import *
 
 from contextlib import contextmanager
 from typing import Dict, List, Optional, Tuple
@@ -46,6 +48,7 @@ class PyBullet:
             self.physics_client.configureDebugVisualizer(p.COV_ENABLE_MOUSE_PICKING, 0)
         else:
             self.physics_client = bc.BulletClient(connection_mode=p.DIRECT)
+
 
         self.n_substeps = n_substeps
         self.timestep = 1.0 / 240  # 500
@@ -413,6 +416,12 @@ class PyBullet:
         """
         kwargs["flags"] = p.URDF_USE_SELF_COLLISION
         self._bodies_idx[body_name] = self.physics_client.loadURDF(**kwargs)
+
+    def load_modelnet(self, body_name: str, **kwargs: dict):
+        filename = CLS_OBJECT_LOCATION[kwargs['name']][1]
+        scale = CLS_OBJECT_LOCATION[kwargs['name']][0]
+        self._bodies_idx[body_name] = self.physics_client.loadURDF(fileName=filename, globalScaling=scale,
+                                                                   basePosition=kwargs['basePosition'])
 
     def get_num_joints(self, body_name: str) -> int:
         """Get total number of joints in the robot.

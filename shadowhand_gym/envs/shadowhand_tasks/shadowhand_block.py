@@ -16,7 +16,7 @@ import open3d as o3d
 
 
 class ShadowHandBlockEnv(RobotTaskEnv, ABC):
-    def __init__(self, object: str='YcbPear', render: bool = False, reward_type: str = "sparse") -> None:
+    def __init__(self, object: str='YcbPear', classify: bool=False, render: bool = False, reward_type: str = "sparse") -> None:
         """Block manipulation task with Shadow Dexterous Hand robot.
 
         Args:
@@ -30,9 +30,11 @@ class ShadowHandBlockEnv(RobotTaskEnv, ABC):
             base_orientation=[0.5, -0.5, 0.5, -0.5],
         )
         self.object_name = object
-        self.task = Block(sim=self.sim, robot=self.robot, object=object, reward_type=reward_type)
-        RobotTaskEnv.__init__(self)
+        self.task = Block(sim=self.sim, robot=self.robot, object=object, classify=classify, reward_type=reward_type)
+        self.physicId = self.sim.physics_client._client
         self._set_cameras()
+        RobotTaskEnv.__init__(self)
+
 
     def _set_cameras(self):
         # self._path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -41,21 +43,21 @@ class ShadowHandBlockEnv(RobotTaskEnv, ABC):
         object_up_vector = [0, -1, 0]
         target_up_vector = [1, 0, 0]
         camera_list.append(Camera((0.2, 0.2, 0.7), (0.707, 0.691, -0.147, -0.043),
-                                  (0.25, 0.0, 0.0), object_up_vector))
+                                  (0.25, 0.0, 0.0), object_up_vector, pybullet_client_id=self.physicId))
         camera_list.append(Camera((0.2, 0.1, 0.7), (0.707, 0.691, -0.147, -0.043),
-                                  (0.25, 0.0, 0.0), object_up_vector))
+                                  (0.25, 0.0, 0.0), object_up_vector, pybullet_client_id=self.physicId))
         camera_list.append(Camera((0.2, 0, 0.7), (0.755, 0.642, -0.119, -0.063),
-                                  (0.25, 0.0, 0.0), object_up_vector))
+                                  (0.25, 0.0, 0.0), object_up_vector, pybullet_client_id=self.physicId))
         camera_list.append(Camera((0.2, -0.1, 0.7), (0.791, 0.593, -0.057, -0.136),
-                                  (0.25, 0.0, 0.0), object_up_vector))
+                                  (0.25, 0.0, 0.0), object_up_vector, pybullet_client_id=self.physicId))
         camera_list.append(Camera((0.2, -0.2, 0.7), (0.791, 0.593, -0.057, -0.136),
-                                  (0.25, 0.0, 0.0), object_up_vector))
+                                  (0.25, 0.0, 0.0), object_up_vector, pybullet_client_id=self.physicId))
 
-        target_camera_list.append(Camera((-4.8, -4.8, 0.55), (0.707, 0.691, -0.147, -0.043), (-5, -5, 0.4), target_up_vector))
-        target_camera_list.append(Camera((-4.8, -4.9, 0.55), (0.707, 0.691, -0.147, -0.043), (-5, -5, 0.4), target_up_vector))
-        target_camera_list.append(Camera((-4.8, -5, 0.55), (0.755, 0.642, -0.119, -0.063), (-5, -5, 0.4), target_up_vector))
-        target_camera_list.append(Camera((-4.8, -5.1, 0.55), (0.791, 0.593, -0.057, -0.136), (-5, -5, 0.4), target_up_vector))
-        target_camera_list.append(Camera((-4.8, -5.2, 0.55), (0.791, 0.593, -0.057, -0.136), (-5, -5, 0.4), target_up_vector))
+        target_camera_list.append(Camera((-4.8, -4.8, 0.55), (0.707, 0.691, -0.147, -0.043), (-5, -5, 0.4), target_up_vector, pybullet_client_id=self.physicId))
+        target_camera_list.append(Camera((-4.8, -4.9, 0.55), (0.707, 0.691, -0.147, -0.043), (-5, -5, 0.4), target_up_vector, pybullet_client_id=self.physicId))
+        target_camera_list.append(Camera((-4.8, -5, 0.55), (0.755, 0.642, -0.119, -0.063), (-5, -5, 0.4), target_up_vector, pybullet_client_id=self.physicId))
+        target_camera_list.append(Camera((-4.8, -5.1, 0.55), (0.791, 0.593, -0.057, -0.136), (-5, -5, 0.4), target_up_vector, pybullet_client_id=self.physicId))
+        target_camera_list.append(Camera((-4.8, -5.2, 0.55), (0.791, 0.593, -0.057, -0.136), (-5, -5, 0.4), target_up_vector, pybullet_client_id=self.physicId))
 
         self._object_cameras = CameraArray(camera_list)
         self._target_cameras = CameraArray(target_camera_list)
@@ -70,7 +72,7 @@ class ShadowHandBlockEnv(RobotTaskEnv, ABC):
             exs, ins = self._target_cameras.get_matrices()
         pcds = o3d.geometry.PointCloud()
         for i, (img, depth) in enumerate(zip(rgbs, depths)):
-            # cv2.imwrite('./{}_color_{}.jpg'.format(camera_name, i), img)
+            # cv2.imwrite('./{}_color_{}.jpg'.format(camera_name, self.object_name), img)
             # cv2.imwrite('./{}_depth_{}.jpg'.format(camera_name, i), depth)
 
             im = o3d.geometry.RGBDImage.create_from_color_and_depth(
@@ -82,7 +84,8 @@ class ShadowHandBlockEnv(RobotTaskEnv, ABC):
             # o3d.visualization.draw_geometries([pcd])
             # o3d.io.write_point_cloud(os.path.join(self._path, 'object_{}.ply'.format(i)), pcd)
             pcds = pcd
-            break
+            if pcds.has_points():
+                break
         # o3d.visualization.draw_geometries(pcds)
         # o3d.io.write_point_cloud('./points_{}.ply'.format(camera_name), pcds)
         object_points = np.asarray(pcds.points)
@@ -92,7 +95,7 @@ class ShadowHandBlockEnv(RobotTaskEnv, ABC):
         assert sampled_points.shape[0] == num_points and sampled_points.shape[1] == 3
         sample_pc = o3d.geometry.PointCloud()
         sample_pc.points = o3d.utility.Vector3dVector(sampled_points)
-        # o3d.io.write_point_cloud('./sample_points_{}.ply'.format(camera_name), sample_pc)
+        # o3d.io.write_point_cloud('./sample_points_{}_{}.ply'.format(camera_name, self.object_name), sample_pc)
         if not sample_pc.has_normals():
             sample_pc.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
         sampled_normals = np.asarray(sample_pc.normals)

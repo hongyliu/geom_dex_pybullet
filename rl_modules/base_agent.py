@@ -1,6 +1,8 @@
 
 import os
 import numpy as np
+import torch
+
 from rl_modules.utils import *
 import wandb
 import time
@@ -16,6 +18,7 @@ base agent
 class base_agent:
     def __init__(self, args, env_params):
         self.args = args
+        self.device = torch.device('cpu') if args.no_cuda else torch.device('cuda')
         self.num_train_envs = len(self.args.train_names)
         self.num_test_envs = len(self.args.test_names)
         self.env_params = env_params
@@ -177,11 +180,11 @@ class base_agent:
         if self.args.load_cycle is not None:
             cycle_load_path = os.path.join(
                 exp_path, '{}_eval_{:04d}_J{}.tar'.format(self.agent_type, expID, self.args.load_cycle))
-            return torch.load(cycle_load_path)
+            return torch.load(cycle_load_path, map_location=self.device)
         else:
             general_load_path = os.path.join(
                 exp_path, '{}_general_{:04d}.tar'.format(self.agent_type, expID))
-            return torch.load(general_load_path)
+            return torch.load(general_load_path, map_location=self.device)
 
     def learn(self, log_callback=None):
         pass

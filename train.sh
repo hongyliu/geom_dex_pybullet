@@ -2,7 +2,7 @@
 category=$1
 case ${category} in
 1)
-  CUDA_VISIBLE_DEVICES=2 nohup python train_classification.py --model pointnet2_cls_ssg --use_normals --num_category 10 --log_dir pointnet2_cls_ssg_normal > train_classification.log 2>&1 &
+  CUDA_VISIBLE_DEVICES=2 nohup python train_classification.py --model pointnet2_cls_ssg --use_normals --num_category 10 --num_point 2048 --log_dir pointnet2_cls_ssg_normal > train_classification.log 2>&1 &
   ;;
 2)
   CUDA_VISIBLE_DEVICES=3 nohup python train_pointnet.py --expID 2 --use_gpu > train_pointnet.log 2>&1 &

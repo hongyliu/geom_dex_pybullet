@@ -21,6 +21,7 @@ from shadowhand_gym.envs.config import *
 from torch.utils.data import Dataset, DataLoader
 from numpy.random import RandomState
 from train_pointnet import init_wandb, log_callback
+from scipy.spatial.transform import Rotation as R
 import gym
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -43,7 +44,7 @@ def parse_args():
     parser.add_argument('--num_category', default=10, type=int, choices=[10, 40],  help='training on ModelNet10/40')
     parser.add_argument('--epoch', default=200, type=int, help='number of epoch in training')
     parser.add_argument('--learning_rate', default=0.001, type=float, help='learning rate in training')
-    parser.add_argument('--num_point', type=int, default=1024, help='Point Number')
+    parser.add_argument('--num_point', type=int, default=2048, help='Point Number')
     parser.add_argument('--optimizer', type=str, default='Adam', help='optimizer for training')
     parser.add_argument('--log_dir', type=str, default=None, help='experiment root')
     parser.add_argument('--decay_rate', type=float, default=1e-4, help='decay rate')
@@ -65,10 +66,10 @@ def inplace_relu(m):
         m.inplace=True
 
 
-def makeEnv(env_name, idx, args):
+def makeEnv(env_name, idx, render, args):
     """return wrapped gym environment for parallel sample collection (vectorized environments)"""
     def helper():
-        e = gym.make('ShadowHandBlock-v1', object=env_name)
+        e = gym.make('ShadowHandBlock-v1', object=env_name, classify=True, render=render)
         e.seed(args.seed + idx)
         return e
     return helper
@@ -76,7 +77,7 @@ def makeEnv(env_name, idx, args):
 
 class TwoStreamDataset(Dataset):
     def __init__(self, env_names, num_points=2500, data_aug=True, std_data_aug=0.02, num_data=100000, seed=123):
-        self.envs = [makeEnv(env_name, 0, args)() for env_name in env_names]
+        self.envs = [makeEnv(env_name, 0, False, args)() for env_name in env_names]
         self.num_classes = len(env_names)
         for env in self.envs:
             env.reset()
@@ -87,9 +88,10 @@ class TwoStreamDataset(Dataset):
         self.data_aug = data_aug
         self.num_data = num_data
         self.std_data_aug = std_data_aug
+        self.cache = {}
 
     def _get_points(self, env):
-        object_points, object_normals = env.get_point_cloud('object', self.num_points, self.rand)
+        object_points, object_normals = env.get_point_cloud('target', self.num_points, self.rand)
         return object_points, object_normals
 
     def _normalize(self, point_set):
@@ -107,16 +109,26 @@ class TwoStreamDataset(Dataset):
 
     def __getitem__(self, index):
         target = index % self.num_classes
-        sampled_points, sampled_normals = self._get_points(self.envs[target])
-        # zero-center and scale to unit sphere
-        point_set = self._normalize(sampled_points)
-        # data augmentation
-        if self.data_aug:
-            point_set1 = self._augment(point_set)
+        if target in self.cache.keys():
+            point_set = self.cache[target][:, :3]
+            sampled_normals = self.cache[target][:, 3:]
+        else:
+            sampled_points, sampled_normals = self._get_points(self.envs[target])
+            # zero-center and scale to unit sphere
+            point_set = self._normalize(sampled_points)
+            # data augmentation
+            if self.data_aug:
+                point_set = self._augment(point_set)
+
+        rotation = R.random()
+        point_set = np.matmul(point_set, rotation.as_matrix().T)
+        # apply same rotations to normals
+        normal_set = np.matmul(sampled_normals, rotation.as_matrix().T)
 
         return_set = np.concatenate(
-            [point_set, sampled_normals], axis=-1).astype(np.float32)
-
+            [point_set, normal_set], axis=-1).astype(np.float32)
+        if target not in self.cache.keys():
+            self.cache[target] = return_set
         return return_set, target
 
     def __len__(self):

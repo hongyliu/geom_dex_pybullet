@@ -62,6 +62,7 @@ class Block(Task):
         sim: PyBullet,
         robot: ShadowHand,
         object: str='YcbPear',
+        classify: bool=False,
         reward_type: str = "sparse",
         distance_threshold: float = 0.05,
         block_half_extend: float = 0.02,
@@ -82,18 +83,26 @@ class Block(Task):
 
         self.sim = sim
         self.robot = robot
+        self.classify = classify
         self.reward_type = reward_type
         self.distance_threshold = distance_threshold
         self.block_half_extend = block_half_extend
 
         with self.sim.no_rendering():
             # self._create_scene()
-            self._create_from_urdf(object)
+            if self.classify:
+                self._load_modelnet(object)
+            else:
+                self._create_from_urdf(object)
             self.sim.place_visualizer(
                 target_position=[0.25, 0.0, 0.0], distance=0.5, yaw=45, pitch=-40
             )
 
         self.goal = None
+
+    def _load_modelnet(self, object_name: str):
+        self.sim.load_modelnet('object', name=object_name, basePosition=self.sim.get_link_position('shadow_hand', 2))
+        self.sim.load_modelnet('target', name=object_name, basePosition=[-5, -5, 0.4])
 
     def _create_from_urdf(self, object_name: str) -> None:
         self.sim.loadURDF('object', fileName=os.path.join(ycb_objects.getDataPath(), object_name, "model.urdf"),
