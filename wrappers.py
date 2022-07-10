@@ -13,6 +13,7 @@ class PointCloudWrapper(Wrapper):
         self.observation_space = copy.deepcopy(self.env.observation_space)
         self.rand = RandomState(args.seed)
         self.args = args
+        self._target = dict()
         # rename the original obs to minimal_obs
         self.observation_space.spaces['minimal_obs'] = self.observation_space.spaces.pop(
             'observation')
@@ -38,12 +39,18 @@ class PointCloudWrapper(Wrapper):
         pcd.points = o3d.utility.Vector3dVector(xyz)
         o3d.io.write_point_cloud(filename, pcd)
 
+    def _get_target(self, num_points, rand):
+        if len(self._target.items()) == 0:
+            target_points, target_normals = self.env.get_point_cloud('target', self.args.num_points, self.rand)
+            self._target = {'points': target_points, 'normals': target_normals}
+        return self._target['points'], self._target['normals']
+
     def observation(self, observation):
         assert isinstance(observation, dict)
         observation['minimal_obs'] = observation.pop('observation')
         if self.args.point_cloud:
             object_points, object_normals = self.env.get_point_cloud('object', self.args.num_points, self.rand)
-            target_points, target_normals = self.env.get_point_cloud('target', self.args.num_points, self.rand)
+            target_points, target_normals = self._get_target(self.args.num_points, self.rand)
 
             # concat all obs
             observation['pc_obs'] = np.concatenate([observation['minimal_obs'],

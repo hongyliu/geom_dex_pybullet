@@ -89,8 +89,8 @@ def get_args():
     args = parser.parse_args()
 
     # default to use train/test split specified in dex_envs/configs
-    args.train_names = args.train_names if args.train_names else ALL_DDPG_TRAIN
-    args.test_names = args.test_names if args.test_names else ALL_DDPG_TEST
+    args.train_names = args.train_names if args.train_names else ALL_TRAIN
+    args.test_names = args.test_names if args.test_names else ALL_TEST
     assert len(list(set(args.train_names) & set(args.test_names))
                ) == 0, 'cannot have overlapping train/test envs'
 

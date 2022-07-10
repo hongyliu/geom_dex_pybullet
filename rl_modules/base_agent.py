@@ -35,7 +35,7 @@ class base_agent:
             count = 0
             for env_name in self.args.train_names:
                 for _ in range(self.num_repeated):
-                    make_fns.append(makeEnv(env_name, count, self.args))
+                    make_fns.append(makeEnv(env_name, count, False, self.args))
                     self.train_vec_env_names.append(env_name)
                     count += 1
             assert len(make_fns) == self.args.num_parallel_envs
@@ -60,7 +60,7 @@ class base_agent:
         count = 0
         for env_name in (self.args.train_names + self.args.test_names):
             for _ in range(eval_num_repeated):
-                make_fns.append(makeEnv(env_name, count, self.args))
+                make_fns.append(makeEnv(env_name, count, False, self.args))
                 self.eval_vec_env_names.append(env_name)
                 count += 1
         # env parallelization methods (recommend chunk envs with chunk_size = ~10)

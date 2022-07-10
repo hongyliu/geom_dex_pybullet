@@ -58,7 +58,7 @@ def get_policy_params(env, args):
 def launch(init_callback=None, log_callback=None):
     args = get_args()
     # create dummy env for accessing spaces attr
-    dummy_env = makeEnv((args.train_names + args.test_names)[0], 0, args)()
+    dummy_env = makeEnv((args.train_names + args.test_names)[0], 0, False, args)()
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)

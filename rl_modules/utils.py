@@ -16,10 +16,10 @@ from PIL import ImageDraw
 from collections import defaultdict
 
 
-def makeEnv(env_name, idx, args):
+def makeEnv(env_name, idx, render, args):
     """return wrapped gym environment for parallel sample collection (vectorized environments)"""
     def helper():
-        e = gym.make('ShadowHandBlock-v1', object=env_name)
+        e = gym.make('ShadowHandBlock-v1', object=env_name, render=render)
         e.seed(args.seed + idx)
         return PointCloudWrapper(e, args)
     return helper
