@@ -9,6 +9,7 @@ from shadowhand_gym.envs.core import Task, get_data_path
 from shadowhand_gym.envs import rotations
 from shadowhand_gym.pybullet_shadow_hand import PyBullet
 from shadowhand_gym.envs.robots.shadowhand import ShadowHand
+from shadowhand_gym.envs.config import ALL_SCALE
 
 
 def distance(a: np.ndarray, b: np.ndarray) -> float:
@@ -106,10 +107,11 @@ class Block(Task):
 
     def _create_from_urdf(self, object_name: str) -> None:
         self.sim.loadURDF('object', fileName=os.path.join(ycb_objects.getDataPath(), object_name, "model.urdf"),
-                          basePosition=self.sim.get_link_position('shadow_hand', 2))
+                          basePosition=self.sim.get_link_position('shadow_hand', 2), globalScaling=ALL_SCALE[object_name])
 
         self.sim.loadURDF('target', fileName=os.path.join(ycb_objects.getDataPath(), object_name, "model.urdf"),
-                          basePosition=[-5, -5, 0.4], baseOrientation=[0.5, -0.5, 0.5, -0.5])
+                          basePosition=[-5, -5, 0.4], baseOrientation=[0, 0, 0, 1], globalScaling=ALL_SCALE[object_name])
+        self.sim.change_mass('target', -1, 0.0)
 
     def _create_scene(self) -> None:
         """Create scene.

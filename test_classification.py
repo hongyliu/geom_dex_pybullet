@@ -2,7 +2,7 @@
 Author: Benny
 Date: Nov 2019
 """
-from data_utils.ShapeNetDataLoader import ShapeNetDataset
+from data_utils.ModelNetDataLoader import ModelNetDataLoader
 import argparse
 import numpy as np
 import os
@@ -11,6 +11,7 @@ import logging
 from tqdm import tqdm
 import sys
 import importlib
+from shadowhand_gym.envs.config import *
 from train_pointnet import init_wandb, log_callback
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -62,9 +63,10 @@ def test(model, loader, args, num_class=40, vote_num=1):
         mean_correct.append(correct.item() / float(points.size()[0]))
 
     class_acc[:, 2] = class_acc[:, 0] / class_acc[:, 1]
-    class_acc = np.mean(class_acc[:, 2])
+    class_acc_dict = dict(zip(ALL_CLS_TRAIN, class_acc[:, 2]))
+    # class_acc = np.mean(class_acc[:, 2])
     instance_acc = np.mean(mean_correct)
-    return instance_acc, class_acc
+    return instance_acc, class_acc_dict
 
 
 def main(args):
@@ -93,9 +95,9 @@ def main(args):
 
     '''DATA LOADING'''
     log_string('Load dataset ...')
-    data_path = './data/shapenetcore_partanno_segmentation_benchmark_v0_normal/'
+    data_path = './data/modelnet40_normal_resampled'
 
-    test_dataset = ShapeNetDataset(args,root=data_path, split='test')
+    test_dataset = ModelNetDataLoader(data_path, args, split='test')
     testDataLoader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=10)
 
     '''MODEL LOADING'''
@@ -106,13 +108,15 @@ def main(args):
     classifier = model.get_model(num_class, normal_channel=args.use_normals)
     if not args.use_cpu:
         classifier = classifier.cuda()
-
-    checkpoint = torch.load(str(experiment_dir) + '/checkpoints/best_model_category_10.pth')
+    device = torch.device('cpu') if args.use_cpu else torch.device('cuda')
+    checkpoint = torch.load(str(experiment_dir) + '/checkpoints/best_model_category_10.pth', map_location=device)
     classifier.load_state_dict(checkpoint['model_state_dict'])
 
     with torch.no_grad():
         instance_acc, class_acc = test(classifier.eval(), testDataLoader, args, vote_num=args.num_votes, num_class=num_class)
-        log_string('Test Instance Accuracy: %f, Class Accuracy: %f' % (instance_acc, class_acc))
+        log_string('Test Instance Accuracy: %f' % (instance_acc))
+        log_string('Class Accuracy: {}'.format(class_acc))
+
 
 
 if __name__ == '__main__':

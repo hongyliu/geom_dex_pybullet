@@ -3,10 +3,14 @@ MESH_NAMES = ['YcbBanana', 'YcbChipsCan', 'YcbCrackerBox', 'YcbFoamBrick', 'YcbG
               'YcbMasterChefCan', 'YcbMediumClamp', 'YcbMustardBottle', 'YcbPear', 'YcbPottedMeatCan', 'YcbPowerDrill',
               'YcbScissors', 'YcbStrawberry', 'YcbTennisBall', 'YcbTomatoSoupCan']
 # 12 objects (avg success rate of experts = %)
-ALL_TRAIN = ['YcbChipsCan', 'YcbCrackerBox', 'YcbFoamBrick', 'YcbGelatinBox', 'YcbHammer', 'YcbMasterChefCan',
-             'YcbMediumClamp', 'YcbMustardBottle', 'YcbPottedMeatCan', 'YcbPowerDrill', 'YcbScissors', 'YcbTennisBall']
+ALL_TRAIN = ['YcbPear', 'YcbScissors', 'YcbHammer', 'YcbChipsCan', 'YcbCrackerBox', 'YcbFoamBrick', 'YcbGelatinBox',
+             'YcbMasterChefCan', 'YcbMediumClamp', 'YcbMustardBottle']
 # 4 objects (avg success rate of experts = %)
-ALL_TEST = ['YcbBanana', 'YcbPear', 'YcbStrawberry', 'YcbTomatoSoupCan']
+ALL_TEST = ['YcbBanana', 'YcbStrawberry', 'YcbPottedMeatCan', 'YcbPowerDrill']
+ALL_SCALE = {'YcbPear': 1.0, 'YcbScissors': 0.8, 'YcbHammer': 0.7, 'YcbBanana': 1.0, 'YcbChipsCan': 0.6,
+             'YcbCrackerBox': 0.6, 'YcbFoamBrick': 0.9, 'YcbGelatinBox': 0.9, 'YcbMasterChefCan': 0.8,
+             'YcbMediumClamp': 1.1, 'YcbMustardBottle': 0.6, 'YcbPottedMeatCan': 0.8, 'YcbPowerDrill': 0.6,
+             'YcbStrawberry': 1.0, 'YcbTomatoSoupCan': 1.0}
 
 ALL_CLS_TRAIN = ['bathtub', 'chair', 'guitar', 'lamp', 'monitor', 'piano', 'plant', 'sink', 'table', 'toilet']
 

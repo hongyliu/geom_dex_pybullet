@@ -1,10 +1,6 @@
 import pybullet as p
 import pybullet_data
 import os
-from igibson.objects.ycb_object import YCBObject
-from igibson.objects.articulated_object import ArticulatedObject
-from igibson.objects.shapenet_object import ShapeNetObject
-import igibson
 import numpy as np
 from train_classification import parse_args, makeEnv
 from numpy.random import RandomState
@@ -12,10 +8,10 @@ import gym
 from shadowhand_gym.envs.config import *
 
 args = parse_args()
-envs = [gym.make('ShadowHandBlock-v1', object=name, classify=True) for name in ALL_CLS_TRAIN]
+envs = [gym.make('ShadowHandBlock-v1', object=name, render=True) for name in ['YcbTomatoSoupCan']]
 for env in envs:
     env.reset()
-    env.get_point_cloud('target', 1024, RandomState(42))
+    env.get_point_cloud('object', 1024, RandomState(42))
 while True:
     p.stepSimulation()
 p.disconnect()

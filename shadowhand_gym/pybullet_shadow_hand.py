@@ -5,7 +5,6 @@ import time
 import pybullet as p
 import pybullet_utils.bullet_client as bc
 import pybullet_data
-import igibson
 from shadowhand_gym.envs.config import *
 
 from contextlib import contextmanager
@@ -422,6 +421,9 @@ class PyBullet:
         scale = CLS_OBJECT_LOCATION[kwargs['name']][0]
         self._bodies_idx[body_name] = self.physics_client.loadURDF(fileName=filename, globalScaling=scale,
                                                                    basePosition=kwargs['basePosition'])
+
+    def change_mass(self, name, link, mass=0.0):
+        self.physics_client.changeDynamics(self._bodies_idx[name], linkIndex=link, mass=mass)
 
     def get_num_joints(self, body_name: str) -> int:
         """Get total number of joints in the robot.

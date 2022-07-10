@@ -241,9 +241,9 @@ def main(args):
     if not args.use_cpu:
         classifier = classifier.cuda()
         criterion = criterion.cuda()
-
+    device = torch.device('cpu') if args.use_cpu else torch.device('cuda')
     try:
-        checkpoint = torch.load(str(exp_dir) + '/checkpoints/best_model_category_10.pth')
+        checkpoint = torch.load(str(exp_dir) + '/checkpoints/best_model_category_10.pth', map_location=device)
         start_epoch = checkpoint['epoch']
         classifier.load_state_dict(checkpoint['model_state_dict'])
         log_string('Use pretrain model')

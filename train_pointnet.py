@@ -50,7 +50,7 @@ def compute_geodesic_distance_from_two_matrices(m1, m2, use_gpu):
 
 class TwoStreamDataset(Dataset):
     def __init__(self, env_names, num_points=2500, data_aug=True, std_data_aug=0.02, num_data=100000, seed=123):
-        self.envs = [makeEnv(env_name, 0, args)() for env_name in env_names]
+        self.envs = [makeEnv(env_name, 0, False, args)() for env_name in env_names]
         self.num_classes = len(env_names)
         for env in self.envs:
             env.reset()
@@ -61,9 +61,10 @@ class TwoStreamDataset(Dataset):
         self.data_aug = data_aug
         self.num_data = num_data
         self.std_data_aug = std_data_aug
+        self.cache = {}
 
-    def _get_points(self, env):
-        object_points, object_normals = env.get_point_cloud('object', self.num_points, self.rand)
+    def _get_points(self, env, name):
+        object_points, object_normals = env.get_point_cloud(name, self.num_points, self.rand)
         return object_points, object_normals
 
     def _normalize(self, point_set):
@@ -82,37 +83,42 @@ class TwoStreamDataset(Dataset):
 
     def __getitem__(self, index):
         target = index % self.num_classes
-        sampled_points, sampled_normals = self._get_points(
-            self.envs[target])
-        # apply random rotation to first point set
-        first_rotation = R.random()
-        point_set1 = np.matmul(sampled_points, first_rotation.as_matrix().T)
-        # apply random rotation to second point set
-        second_rotation = R.random()
-        point_set2 = np.matmul(sampled_points, second_rotation.as_matrix().T)
-        # apply same rotations to normals
-        normal_set1 = np.matmul(sampled_normals, first_rotation.as_matrix().T)
-        normal_set2 = np.matmul(
-            sampled_normals, second_rotation.as_matrix().T)
-        # obtain the rotation between two rotated point sets
-        rotation_diff = np.matmul(
-            second_rotation.as_matrix(), first_rotation.inv().as_matrix())
-        rotation_diff = rotation_diff.astype(np.float32).flatten()  # reformat for training
+        if target in self.cache.keys():
+            return_set1 = self.cache[target][0]
+            return_set2 = self.cache[target][1]
+            rotation_diff = self.cache[target][2]
+        else:
+            sampled_points, sampled_normals = self._get_points(self.envs[target], 'target')
+            # apply random rotation to first point set
+            first_rotation = R.random()
+            point_set1 = np.matmul(sampled_points, first_rotation.as_matrix().T)
+            # apply random rotation to second point set
+            second_rotation = R.random()
+            point_set2 = np.matmul(sampled_points, second_rotation.as_matrix().T)
+            # apply same rotations to normals
+            normal_set1 = np.matmul(sampled_normals, first_rotation.as_matrix().T)
+            normal_set2 = np.matmul(
+                sampled_normals, second_rotation.as_matrix().T)
+            # obtain the rotation between two rotated point sets
+            rotation_diff = np.matmul(
+                second_rotation.as_matrix(), first_rotation.inv().as_matrix())
+            rotation_diff = rotation_diff.astype(np.float32).flatten()  # reformat for training
 
-        # zero-center and scale to unit sphere
-        point_set1 = self._normalize(point_set1)
-        point_set2 = self._normalize(point_set2)
+            # zero-center and scale to unit sphere
+            point_set1 = self._normalize(point_set1)
+            point_set2 = self._normalize(point_set2)
 
-        # data augmentation
-        if self.data_aug:
-            point_set1 = self._augment(point_set1)
-            point_set2 = self._augment(point_set2)
+            # data augmentation
+            if self.data_aug:
+                point_set1 = self._augment(point_set1)
+                point_set2 = self._augment(point_set2)
 
-        return_set1 = np.concatenate(
-            [point_set1, normal_set1], axis=-1).astype(np.float32)
-        return_set2 = np.concatenate(
-            [point_set2, normal_set2], axis=-1).astype(np.float32)
-
+            return_set1 = np.concatenate(
+                [point_set1, normal_set1], axis=-1).astype(np.float32)
+            return_set2 = np.concatenate(
+                [point_set2, normal_set2], axis=-1).astype(np.float32)
+        if target not in self.cache.keys():
+            self.cache[target] = (return_set1, return_set2, rotation_diff)
         return return_set1, return_set2, target, rotation_diff
 
     def __len__(self):
@@ -267,10 +273,10 @@ def create_save_dirs(args):
     print('*' * 40)
 
 
-def makeEnv(env_name, idx, args):
+def makeEnv(env_name, idx, render, args):
     """return wrapped gym environment for parallel sample collection (vectorized environments)"""
     def helper():
-        e = gym.make('ShadowHandBlock-v1', object=env_name)
+        e = gym.make('ShadowHandBlock-v1', object=env_name, render=render)
         e.seed(args.seed + idx)
         return e
     return helper
