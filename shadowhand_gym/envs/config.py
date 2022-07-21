@@ -17,7 +17,7 @@ ALL_CLS_TRAIN = ['bathtub', 'chair', 'guitar', 'lamp', 'monitor', 'piano', 'plan
 ALL_CLS_TEST = ['bathtub_test', 'chair_test', 'guitar_test', 'lamp_test', 'monitor_test', 'piano_test', 'plant_test',
                 'sink_test', 'table_test', 'toilet_test']
 
-ALL_DDPG_TRAIN = ['YcbChipsCan', 'YcbCrackerBox']
+ALL_DDPG_TRAIN = ['YcbPear', 'YcbScissors']
 ALL_DDPG_TEST = ['YcbBanana']
 
 CLS_OBJECT_LOCATION = {

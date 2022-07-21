@@ -60,6 +60,7 @@ def get_args():
                         help="do not use multiprocessing")
     parser.add_argument('--no_save', action="store_true",
                         help="do not save anything")
+    parser.add_argument('--max_episode_steps', type=int, default=200, help="simulate steps every episode")
     parser.add_argument('--epoch_per_cycle', type=float, default=22.966,
                         help="alternative way to specify n_batches; it means the number of epochs to train over the size of newly collected data; if newly collected 1000 transitions, 10 epochs means training for 100 batches with batch size being 100")
     parser.add_argument('--num_parallel_envs', type=int, default=4,
@@ -80,7 +81,7 @@ def get_args():
     parser.add_argument('--width', type=int, default=768)
     parser.add_argument('--point_cloud', action="store_true",
                         help="enable using pointnet + MLP")
-    parser.add_argument('--num_points', type=int, default=512,
+    parser.add_argument('--num_points', type=int, default=128,
                         help="number of points to sample")
     parser.add_argument('--pointnet_output_dim', type=int, default=512,
                         help="output dim of the two stream pointnet feature net")
@@ -89,8 +90,8 @@ def get_args():
     args = parser.parse_args()
 
     # default to use train/test split specified in dex_envs/configs
-    args.train_names = args.train_names if args.train_names else ALL_TRAIN
-    args.test_names = args.test_names if args.test_names else ALL_TEST
+    args.train_names = args.train_names if args.train_names else ALL_DDPG_TRAIN
+    args.test_names = args.test_names if args.test_names else ALL_DDPG_TEST
     assert len(list(set(args.train_names) & set(args.test_names))
                ) == 0, 'cannot have overlapping train/test envs'
 

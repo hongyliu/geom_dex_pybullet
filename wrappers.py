@@ -9,7 +9,7 @@ class PointCloudWrapper(Wrapper):
     def __init__(self, env, args):
         super(PointCloudWrapper, self).__init__(env)
         self.env_name = env.spec.id[:-3]
-        self._max_episode_steps = self.env._max_episode_steps
+        self._max_episode_steps = args.max_episode_steps
         self.observation_space = copy.deepcopy(self.env.observation_space)
         self.rand = RandomState(args.seed)
         self.args = args

@@ -20,7 +20,7 @@ def init_callback(args, prefix):
         resume_mode = 'allow'
     else:
         resume_mode = None
-    run_name = '{}_{:04d}'.format(prefix, args.expID)
+    run_name = '{}_{:05d}'.format(prefix, args.expID)
     wandb.init(name=run_name, id=run_name, resume=resume_mode,
                save_code=True, anonymous="allow")
     wandb.config.update(args, allow_val_change=True)

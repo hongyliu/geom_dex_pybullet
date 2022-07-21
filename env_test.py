@@ -11,9 +11,13 @@ args = parse_args()
 envs = [gym.make('ShadowHandBlock-v1', object=name, render=True) for name in ['YcbTomatoSoupCan']]
 for env in envs:
     env.reset()
-    env.get_point_cloud('object', 1024, RandomState(42))
-while True:
-    p.stepSimulation()
+    done = False
+    # env.get_point_cloud('object', 1024, RandomState(42))
+    while True:
+        action = np.random.uniform(-1., 1., (1, 20))
+        obs, reward, done, info = env.step(action)
+        print(env.robot.get_obs())
+        p.stepSimulation()
 p.disconnect()
 
 

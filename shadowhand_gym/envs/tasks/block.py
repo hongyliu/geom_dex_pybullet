@@ -56,7 +56,6 @@ def distance(a: np.ndarray, b: np.ndarray) -> float:
 
 
 class Block(Task):
-    GOAL_ORIENTATION = [0.0] * 3
 
     def __init__(
         self,
@@ -65,7 +64,7 @@ class Block(Task):
         object: str='YcbPear',
         classify: bool=False,
         reward_type: str = "sparse",
-        distance_threshold: float = 0.05,
+        distance_threshold: float = 0.1,
         block_half_extend: float = 0.02,
     ) -> None:
         """Shadow dexterous hand manipulate block task.
@@ -86,7 +85,7 @@ class Block(Task):
         self.robot = robot
         self.classify = classify
         self.reward_type = reward_type
-        self.distance_threshold = distance_threshold
+        self.rotation_threshold = distance_threshold
         self.block_half_extend = block_half_extend
 
         with self.sim.no_rendering():
@@ -144,10 +143,10 @@ class Block(Task):
         """
         object_velocity = self.get_object_velocity()
         object_angular_velocity = self.get_object_angular_velocity()
-        achieved_goal = self.get_achieved_goal()
+        # achieved_goal = self.get_achieved_goal()
 
         observations = np.concatenate(
-            [object_velocity, object_angular_velocity, achieved_goal]
+            [object_velocity, object_angular_velocity]#, achieved_goal]
         )
         return observations
 
@@ -186,15 +185,30 @@ class Block(Task):
         Returns:
             np.ndarray: Cartesian position and orientation in quaternions of the object (target).
         """
-        goal_orientation = self.sim.physics_client.getQuaternionFromEuler(
-            self.GOAL_ORIENTATION
-        )
-        goal_orientation = np.array(goal_orientation)
+        goal_orientation = self.get_target_orientation()
 
-        object_position = self.get_object_position()
+        goal_position = self.get_target_position()
 
-        goal = np.concatenate([object_position, goal_orientation])
+        goal = np.concatenate([goal_position, goal_orientation])
         return goal
+
+    def get_target_position(self) -> np.ndarray:
+        """Get current target position.
+
+        Returns:
+            np.ndarray: Cartesian position of the target.
+        """
+        position = self.sim.get_base_position("target")
+        return np.array(position)
+
+    def get_target_orientation(self) -> np.ndarray:
+        """Get current target orientation.
+
+        Returns:
+            np.ndarray: target orientation in quaternions.
+        """
+        orientation = self.sim.get_base_orientation("target")
+        return np.array(orientation)
 
     def get_object_position(self) -> np.ndarray:
         """Get current object position.
@@ -232,25 +246,39 @@ class Block(Task):
         velocity = self.sim.get_base_angular_velocity("object")
         return np.array(velocity)
 
-    def is_success(self, achieved_goal: np.ndarray, desired_goal: np.ndarray) -> float:
-        """Return success or failure.
-
-        Returns:
-            float: Success or failure (1.0 = success, 0.0 = failure).
-        """
-        d = distance(achieved_goal, desired_goal)
-        return (d < self.distance_threshold).astype(np.float32)
-
-    def compute_reward(
-        self, achieved_goal: np.ndarray, desired_goal: np.ndarray, info: dict
-    ) -> float:
-        """Return reward.
-
-        Returns:
-            float: The reward for a particular action.
-        """
-        d = distance(achieved_goal, desired_goal)
-        if self.reward_type == "sparse":
-            return (d < self.distance_threshold).astype(np.float32) - 1.0
+    def compute_reward(self, achieved_goal, goal, info):
+        if self.reward_type == 'sparse':
+            success = self.is_success(achieved_goal, goal).astype(np.float32)
+            return (success - 1.)
         else:
-            return -d
+            d_pos, d_rot = self.goal_distance(achieved_goal, goal)
+            # We weigh the difference in position to avoid that `d_pos` (in meters) is completely
+            # dominated by `d_rot` (in radians).
+            return -(10. * d_pos + d_rot)
+
+    # RobotEnv methods
+    # ----------------------------
+
+    def is_success(self, achieved_goal, desired_goal):
+        d_rot = self.goal_distance(achieved_goal, desired_goal)
+        # achieved_pos = (d_pos < self.distance_threshold).astype(np.float32)
+        achieved_rot = (d_rot < self.rotation_threshold).astype(np.float32)
+        # achieved_both = achieved_pos * achieved_rot
+        return achieved_rot
+
+    def goal_distance(self, goal_a, goal_b):
+        assert goal_a.shape == goal_b.shape
+        assert goal_a.shape[-1] == 7
+
+        # d_pos = np.zeros_like(goal_a[..., 0])
+        d_rot = np.zeros_like(goal_b[..., 0])
+
+        # if self.target_rotation != 'ignore':
+        quat_a, quat_b = goal_a[..., 3:], goal_b[..., 3:]
+
+        # Subtract quaternions and extract angle between them.
+        quat_diff = rotations.quat_mul(quat_a, rotations.quat_conjugate(quat_b))
+        angle_diff = 2 * np.arccos(np.clip(quat_diff[..., 0], -1., 1.))
+        d_rot = angle_diff
+        # assert d_pos.shape == d_rot.shape
+        return d_rot

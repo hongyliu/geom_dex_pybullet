@@ -233,9 +233,8 @@ class RobotTaskEnv(gym.GoalEnv, ABC):
         """
         robot_obs = self.robot.get_obs()  # robot state
         task_obs = self.task.get_obs()  # object position, velocity, etc.
-        observation = np.concatenate([robot_obs, task_obs])
-
         achieved_goal = self.task.get_achieved_goal()
+        observation = np.concatenate([robot_obs, task_obs, achieved_goal])
 
         return {
             "observation": observation,
